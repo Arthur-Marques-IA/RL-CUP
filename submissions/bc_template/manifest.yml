@@ -1,0 +1,6 @@
+team: ufg-rl-cup
+members: []
+controlled_players: 4
+deterministic: true
+description: >
+  BC from scripted template (384k samples, no noise), egocentric MLP 256x2
