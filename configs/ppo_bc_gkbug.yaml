@@ -1,4 +1,6 @@
 # Line B: PPO initialised from the BC clone of GRF_MARL's GKBug_v1 (professor's OK obtained).
+# PENDING: the BC clone (checkpoints/bc_gkbug_v1) is not published yet -- it must first beat the
+# template clone vs builtin (gate in IMITACAO.md). Until then run configs/ppo_bc_template.yaml.
 # The clone is published at checkpoints/bc_gkbug_v1/latest.pt (python -m cup.bc train ... --publish).
 line: B_bc_gkbug
 seed: 1
@@ -13,9 +15,9 @@ ppo:
   lr: 1.0e-4                # lower LR so the first updates do not erase the clone
   lr_final: 5.0e-5
   epochs: 4
-  minibatches: 8
+  minibatch_size: 16384
   entropy_coef: 0.001
-  hidden: 512               # must match the BC student
+  hidden: 256               # must match the BC student
 reward:
   alpha: 0.2
   beta: 0.05

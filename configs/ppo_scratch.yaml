@@ -12,7 +12,7 @@ ppo:
   lr: 3.0e-4
   lr_final: 1.0e-4
   epochs: 4
-  minibatches: 8
+  minibatch_size: 16384
   entropy_coef: 0.003
 reward:
   alpha: 0.2                # ball-progress potential

@@ -1,0 +1,10 @@
+{
+  "line": "bc_template",
+  "kind": "bc",
+  "env_steps": 0,
+  "code_sha": "2cee729",
+  "teacher": "template",
+  "samples": 384128,
+  "description": "BC from template (384,128 samples), egocentric MLP",
+  "val_accuracy": 0.9787566661834717
+}

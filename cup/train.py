@@ -32,7 +32,7 @@ import yaml
 
 import cuju
 from cup import features
-from cup.checkpoint import RUNS, atomic_save, find_latest, publish, safe_load
+from cup.checkpoint import PUBLISHED, RUNS, atomic_save, find_latest, publish, safe_load
 from cup.config import TrainCfg, drift, load_config, to_dict
 from cup.model import N_ACTIONS, ActorCritic
 from cup.rewards import PotentialShaping
@@ -144,23 +144,31 @@ class Trainer:
         self.ref = None
         self.env_steps = 0
         self.updates = 0
-        self.obs_stats_ready = False
+        # Scratch runs keep identity normalisation (obs_mean=0, obs_std=1): the features are already
+        # O(1). BC inits bring their own (std-floored) stats.
         self.pool_files: list[str] = []
         self.last_eval = None
+        self.published_base = None   # env_steps of the published checkpoint this run continues
+        if cfg.init.checkpoint and not Path(cfg.init.checkpoint).is_file():
+            raise SystemExit(f"init.checkpoint {cfg.init.checkpoint} not found: `git pull`, or create it "
+                             f"(TREINO.md §6), or point the config to another BC init")
         if resume_state is not None:
             self.model.load_state_dict(resume_state["model"])
             if "optimizer" in resume_state:
                 self.opt.load_state_dict(resume_state["optimizer"])
             self.env_steps = int(resume_state["env_steps"])
             self.updates = int(resume_state["updates"])
-            self.obs_stats_ready = True
             self.pool_files = list(resume_state.get("pool", []))
             self.last_eval = resume_state.get("last_eval")
             self.parent = resume_state.get("parent", parent)
+            self.published_base = resume_state.get("published_base")
         elif cfg.init.checkpoint:
             init = safe_load(Path(cfg.init.checkpoint))
-            self.model.load_state_dict(init["model"], strict=False)
-            self.obs_stats_ready = True
+            sd = init["model"]
+            if sd["actor.0.weight"].shape[0] != cfg.ppo.hidden:
+                raise SystemExit(f"{cfg.init.checkpoint} has hidden={sd['actor.0.weight'].shape[0]} but "
+                                 f"ppo.hidden={cfg.ppo.hidden}")
+            self.model.load_state_dict(sd, strict=False)
             self.parent = cfg.init.checkpoint
             print(f"initialised from {cfg.init.checkpoint}")
         if cfg.init.checkpoint and cfg.init.kl_coef > 0:
@@ -186,35 +194,34 @@ class Trainer:
         self.batch = cuju.BatchEnvironment(bundles if len(bundles) > 1 else bundles[0], **kw)
         self.agents = self.batch.agents
 
-        # ---- league
+        # ---- league: own snapshots (rotating) + seed opponents (fixed)
         self.latest = copy.deepcopy(self.model).requires_grad_(False).eval()
-        self.pool: list[ActorCritic] = []
-        for f in self.pool_files:
-            self._add_pool_member(self.out / "pool" / f, register=False)
-        for f in cfg.league.seed_pool:
-            self._add_pool_member(Path(f), register=False)
+        self.pool_own = [self._load_member(self.out / "pool" / f) for f in self.pool_files]
+        self.pool_seed = [self._load_member(Path(f)) for f in cfg.league.seed_pool]
         self.opp_idx = torch.zeros(max(self.n_pool, 1), dtype=torch.long, device=self.dev)
 
+    @property
+    def pool(self) -> list[ActorCritic]:
+        return self.pool_own + self.pool_seed
+
     # ---------------------------------------------------------------- league helpers
-    def _add_pool_member(self, path: Path, register=True):
+    def _load_member(self, path: Path) -> ActorCritic:
         st = safe_load(path)
-        m = ActorCritic(hidden=self.cfg.ppo.hidden).to(self.dev)
-        m.load_state_dict(st["model"] if "model" in st else st, strict=False)
-        m.requires_grad_(False).eval()
-        self.pool.append(m)
-        if register:
-            self.pool_files.append(path.name)
+        sd = st["model"] if "model" in st else st
+        m = ActorCritic(hidden=sd["actor.0.weight"].shape[0]).to(self.dev)
+        m.load_state_dict(sd, strict=False)       # actor-only snapshots: critic stays random (unused)
+        return m.requires_grad_(False).eval()
 
     def _snapshot(self):
         name = f"snap_{self.env_steps:012d}.pt"
-        atomic_save({"model": self.model.state_dict(), "env_steps": self.env_steps}, self.out / "pool" / name)
-        self._add_pool_member(self.out / "pool" / name)
-        n_seed = len(self.cfg.league.seed_pool)
+        actor_only = {k: v for k, v in self.model.state_dict().items() if not k.startswith("critic.")}
+        atomic_save({"model": actor_only, "env_steps": self.env_steps}, self.out / "pool" / name)
+        self.pool_files.append(name)
+        self.pool_own.append(self._load_member(self.out / "pool" / name))
         while len(self.pool_files) > self.cfg.league.pool_size:
             old = self.pool_files.pop(0)
-            self.pool.pop(0)  # own snapshots come first in self.pool
+            self.pool_own.pop(0)
             (self.out / "pool" / old).unlink(missing_ok=True)
-        assert len(self.pool) == len(self.pool_files) + n_seed
 
     def _sample_opponents(self, n: int) -> torch.Tensor:
         """0 = latest copy, 1..P = pool members."""
@@ -236,7 +243,14 @@ class Trainer:
     def state(self) -> dict:
         return {"model": self.model.state_dict(), "optimizer": self.opt.state_dict(),
                 "env_steps": self.env_steps, "updates": self.updates, "config": to_dict(self.cfg),
-                "pool": self.pool_files, "parent": self.parent, "last_eval": self.last_eval}
+                "pool": self.pool_files, "parent": self.parent, "last_eval": self.last_eval,
+                "published_base": self.published_base}
+
+    def publish(self):
+        self.save()
+        if publish(self.cfg.line, base=self.published_base):
+            self.published_base = self.env_steps
+            self.save()
 
     def save(self):
         atomic_save(self.state(), self.out / "latest.pt")
@@ -345,11 +359,6 @@ class Trainer:
                     new = self._sample_opponents(self.n_pool)
                     self.opp_idx = torch.where(d[self.n_builtin:], new, self.opp_idx)
 
-            # ---------------- obs stats (scratch runs only): frozen after the first rollout
-            if not self.obs_stats_ready:
-                self.model.set_obs_stats(obs.reshape(-1, features.FEATURE_DIM))
-                self.obs_stats_ready = True
-
             # ---------------- GAE (terminal at match end)
             with torch.no_grad():
                 next_value = self.model.value(features.encode(raw)[:, :L])
@@ -367,13 +376,14 @@ class Trainer:
             b_obs = obs.reshape(-1, features.FEATURE_DIM)
             b_act, b_logp, b_adv, b_ret, b_val = (z.reshape(-1) for z in (actions, logps, adv, ret, values))
             n = b_obs.shape[0]
-            mb = n // cfg.ppo.minibatches
+            mb = min(cfg.ppo.minibatch_size, n)
+            n_mb = max(n // mb, 1)
             warmup = self.env_steps < cfg.init.critic_warmup
             stats = {"pg_loss": 0.0, "v_loss": 0.0, "entropy": 0.0, "approx_kl": 0.0, "kl_init": 0.0, "clipfrac": 0.0}
             count = 0
             for _ in range(cfg.ppo.epochs):
                 perm = torch.randperm(n, device=dev)
-                for i in range(cfg.ppo.minibatches):
+                for i in range(n_mb):
                     idx = perm[i * mb:(i + 1) * mb]
                     o = b_obs[idx]
                     logits = self.model.logits(o)
@@ -465,14 +475,13 @@ class Trainer:
                 self.save()
                 next_ckpt = self.env_steps + cfg.log.checkpoint_every
             if cfg.log.publish_every_minutes > 0 and time.time() - last_publish > 60 * cfg.log.publish_every_minutes:
-                self.save()
-                publish(cfg.line)
+                self.publish()
                 last_publish = time.time()
 
         self.save()
         print(f"[{cfg.line}] done: {self.env_steps:,} env steps; saved {self.out / 'latest.pt'}")
         if cfg.log.publish_every_minutes > 0:
-            publish(cfg.line)
+            self.publish()
         self.batch.close()
 
 
@@ -500,26 +509,28 @@ def main():
             bad = drift(saved, to_dict(cfg))
             if bad and not a.force:
                 raise SystemExit(f"config drift on resume: {bad} (use --force or a new --line)")
+        import shutil
         parent = None
+        from_published = path.parent.parent.resolve() == PUBLISHED.resolve()
         if a.line and a.line != cfg.line:
             parent = f"{cfg.line}@{int(state['env_steps'])}"
             cfg.line = a.line
-        # pool snapshots live next to the checkpoint they came from
-        src_pool = path.parent / "pool"
-        dst_pool = RUNS / cfg.line / "pool"
-        if src_pool.resolve() != dst_pool.resolve() and src_pool.is_dir():
-            dst_pool.mkdir(parents=True, exist_ok=True)
-            for f in src_pool.glob("*.pt"):
-                if not (dst_pool / f.name).exists():
-                    import shutil
-                    shutil.copy2(f, dst_pool / f.name)
-        # keep the curves continuous across machines: start from the published logs
-        import shutil
-        for name in ("metrics.jsonl", "evals.jsonl", "latest_match.cjr"):
-            src, dst = path.parent / name, RUNS / cfg.line / name
-            if src.is_file() and src.resolve() != dst.resolve() and not dst.exists():
-                dst.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(src, dst)
+            state["published_base"] = None          # a new line has never been published
+        elif from_published:
+            state["published_base"] = int(state["env_steps"])
+        dst = RUNS / cfg.line
+        if path.parent.resolve() != dst.resolve():
+            # adopt the source run entirely: pool snapshots and logs (curves stay continuous; a stale
+            # local copy of this line, e.g. from before a teammate trained it, is replaced)
+            if (dst / "pool").is_dir():
+                shutil.rmtree(dst / "pool")
+            (dst / "pool").mkdir(parents=True, exist_ok=True)
+            for f in (path.parent / "pool").glob("*.pt"):
+                shutil.copy2(f, dst / "pool" / f.name)
+            for name in ("metrics.jsonl", "evals.jsonl", "latest_match.cjr"):
+                (dst / name).unlink(missing_ok=True)
+                if (path.parent / name).is_file():
+                    shutil.copy2(path.parent / name, dst / name)
         print(f"resuming {a.resume} from {path} ({int(state['env_steps']):,} env steps)")
         if parent:
             state["parent"] = parent

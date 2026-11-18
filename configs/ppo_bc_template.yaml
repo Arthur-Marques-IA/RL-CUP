@@ -1,0 +1,38 @@
+# Line B0: PPO initialised from the BC clone of the scripted template (interim init while the
+# GKBug_v1 clone is below the gate; see IMITACAO.md).
+# The clone is published at checkpoints/bc_template/latest.pt.
+line: B0_bc_template
+seed: 1
+total_steps: 300_000_000
+env:
+  num_envs: 2048
+  device: cuda
+  builtin_fraction: 0.5
+ppo:
+  rollout: 128
+  gamma: 0.995
+  lr: 1.0e-4                # lower LR so the first updates do not erase the clone
+  lr_final: 5.0e-5
+  epochs: 4
+  minibatch_size: 16384
+  entropy_coef: 0.001
+  hidden: 256               # must match the BC student
+reward:
+  alpha: 0.2
+  beta: 0.05
+  shaping_end: 50_000_000
+init:
+  checkpoint: checkpoints/bc_template/latest.pt
+  kl_coef: 0.5              # KL(pi || pi_BC), decays to 0 at kl_end
+  kl_end: 30_000_000
+  critic_warmup: 2_000_000  # value head learns first, actor frozen
+league:
+  refresh_latest: 2_000_000
+  snapshot_every: 10_000_000
+  pool_size: 10
+  p_latest: 0.6
+log:
+  eval_every: 5_000_000
+  eval_matches: 16
+  checkpoint_every: 2_000_000
+  publish_every_minutes: 60

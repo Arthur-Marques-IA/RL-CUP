@@ -44,9 +44,12 @@ class ActorCritic(nn.Module):
         return self.critic(self.norm(x)).squeeze(-1)
 
     @torch.no_grad()
-    def set_obs_stats(self, x: torch.Tensor):
+    def set_obs_stats(self, x: torch.Tensor, min_std: float = 0.1):
+        """Freeze normalisation stats from data. The std floor matters: rare one-hots (penalty mode)
+        or features that barely move in the sample (steps_left near kick-off) would otherwise be
+        blown up to huge values later in a match."""
         self.obs_mean.copy_(x.mean(0))
-        self.obs_std.copy_(x.std(0).clamp_min(1e-3))
+        self.obs_std.copy_(x.std(0).clamp_min(min_std))
 
     def export_npz(self, path: str | Path) -> None:
         """Actor weights + normalisation stats in the format submission_template/agent.py reads."""

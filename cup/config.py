@@ -29,7 +29,8 @@ class PPOCfg:
     lr: float = 3e-4
     lr_final: float = 3e-4             # linear in env steps until total_steps
     epochs: int = 4
-    minibatches: int = 4
+    minibatch_size: int = 16384        # agent-steps per minibatch (fixed size: same gradient steps
+                                       # per env step on every machine, whatever num_envs is)
     clip: float = 0.2
     value_coef: float = 0.5
     entropy_coef: float = 0.003

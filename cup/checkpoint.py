@@ -88,11 +88,16 @@ def _git(*args, check=True):
     return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=check)
 
 
-def publish(line: str, push: bool = True, message: str | None = None) -> bool:
+def publish(line: str, push: bool = True, message: str | None = None, base: int | None = "auto") -> bool:
+    """`base` = env_steps of the published checkpoint the local run continues (None = the line was
+    never published by this run's ancestry). If the remote moved since (someone else published),
+    publishing would fork the line silently, so it is refused."""
     src = RUNS / line
     if not (src / "latest.pt").is_file():
         raise FileNotFoundError(f"{src / 'latest.pt'} not found (nothing trained locally for {line!r})")
     state = safe_load(src / "latest.pt")
+    if base == "auto":
+        base = state.get("published_base")
     dst = PUBLISHED / line
     if push:
         r = _git("pull", "--rebase", "--autostash", check=False)
@@ -102,9 +107,19 @@ def publish(line: str, push: bool = True, message: str | None = None) -> bool:
         remote = dst / "meta.json"
         if remote.is_file():
             m = json.loads(remote.read_text())
-            if m.get("env_steps", 0) > int(state["env_steps"]):
-                print(f"published {line} is AHEAD ({m['env_steps']:,} > {int(state['env_steps']):,} steps, "
+            remote_steps = int(m.get("env_steps", 0))
+            if remote_steps > int(state["env_steps"]):
+                print(f"published {line} is AHEAD ({remote_steps:,} > {int(state['env_steps']):,} steps, "
                       f"by {m.get('member')}). Not overwriting: resume from it or use a new line name.")
+                return False
+            if base is not None and remote_steps != base:
+                print(f"published {line} moved since you resumed it (now {remote_steps:,} steps by "
+                      f"{m.get('member')}, you started from {base:,}). Publishing would fork the line: "
+                      f"use `python -m cup.train --resume {line} --line <new name>` to keep your run.")
+                return False
+            if base is None and m.get("kind") != "bc":
+                print(f"{line} already exists on the remote (by {m.get('member')}) and this run did not "
+                      f"start from it. Rename your line (--line) instead of overwriting.")
                 return False
     (dst / "pool").mkdir(parents=True, exist_ok=True)
     shutil.copy2(src / "latest.pt", dst / "latest.pt")
@@ -122,9 +137,10 @@ def publish(line: str, push: bool = True, message: str | None = None) -> bool:
     print(f"published {line}: {meta['env_steps']:,} env steps -> {dst}")
     if not push:
         return True
-    _git("add", "-A", str(dst.relative_to(ROOT)))
+    rel = str(dst.relative_to(ROOT)).replace("\\", "/")
+    _git("add", "-A", "--", rel)
     msg = message or f"checkpoint {line}: {meta['env_steps']:,} env steps ({meta['member']}@{meta['host']})"
-    r = _git("commit", "-m", msg, check=False)
+    r = _git("commit", "-m", msg, "--", rel, check=False)   # only this line, never other staged work
     if r.returncode != 0 and "nothing to commit" in (r.stdout + r.stderr):
         print("nothing new to commit")
         return True
@@ -165,7 +181,12 @@ def main():
     sub.add_parser("status")
     a = p.parse_args()
     if a.cmd == "publish":
-        publish(a.line, push=not a.no_push)
+        ok = publish(a.line, push=not a.no_push)
+        if ok and not a.no_push:   # remember what we published, for fork detection next time
+            path = RUNS / a.line / "latest.pt"
+            st = safe_load(path)
+            st["published_base"] = int(st["env_steps"])
+            atomic_save(st, path)
     else:
         status()
 

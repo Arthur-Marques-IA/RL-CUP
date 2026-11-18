@@ -66,7 +66,8 @@ def train(model, x, y, epochs: int, batch_size: int, lr: float, log_path: Path, 
     perm = torch.randperm(n, generator=gen)
     n_val = max(n // 20, 1)
     val, tr = perm[:n_val], perm[n_val:]
-    model.set_obs_stats(x[tr])
+    # x may be float16 (memory): stats from a subsample, minibatches converted on the fly
+    model.set_obs_stats(x[tr[:200_000]].float())
     freq = torch.bincount(y[tr], minlength=N_ACTIONS).float().clamp_min(1)
     weight = (freq / freq.sum()) ** (-class_weight_power) if class_weight_power > 0 else None
     if weight is not None:
@@ -82,14 +83,14 @@ def train(model, x, y, epochs: int, batch_size: int, lr: float, log_path: Path, 
             total = 0.0
             for i in range(0, len(order), batch_size):
                 idx = order[i:i + batch_size]
-                loss = torch.nn.functional.cross_entropy(model.logits(x[idx]), y[idx], weight=weight)
+                loss = torch.nn.functional.cross_entropy(model.logits(x[idx].float()), y[idx], weight=weight)
                 opt.zero_grad()
                 loss.backward()
                 opt.step()
                 total += float(loss.detach()) * len(idx)
             model.eval()
             with torch.no_grad():
-                logits = model.logits(x[val])
+                logits = model.logits(x[val].float())
                 vl = float(torch.nn.functional.cross_entropy(logits, y[val]))
                 pred = logits.argmax(-1)
                 acc = float((pred == y[val]).float().mean())
@@ -172,7 +173,7 @@ def main():
         y = torch.cat([s["y"] for s in shards])
         stats = [s["stats"] for s in shards]
         teacher = stats[0].get("teacher", "?")
-    x, y = x.float(), y.long()
+    y = y.long()  # x stays float16 (memory); train() converts minibatches
     hist = torch.bincount(y, minlength=N_ACTIONS).tolist()
     summary = {"teacher": teacher, "samples": len(y), "label_histogram": hist, "shards": stats}
     (args.out / "data.json").write_text(json.dumps(summary, indent=2))
