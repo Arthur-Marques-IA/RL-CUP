@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.pt binary
+*.pkl binary
+*.npz binary
+*.cjr binary
+*.dump binary
