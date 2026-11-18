@@ -27,7 +27,7 @@ def move_towards(pos: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
 
 def _active_positions(raw):
     lt = raw["left_team"].float()                      # [E, A, P, 2]
-    active = raw["active"].long()                      # [E, A]
+    active = raw["active"].long().clamp_min(0)         # [E, A]; -1 = controls nobody (red card)
     idx = active[..., None, None].expand(*active.shape, 1, 2)
     return torch.gather(lt, 2, idx).squeeze(2), active
 

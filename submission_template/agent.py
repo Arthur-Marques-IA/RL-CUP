@@ -28,7 +28,8 @@ def encode(obs: dict) -> np.ndarray:
     ltd = _f32(obs["left_team_direction"])[:N_PLAYERS]
     rt = _f32(obs["right_team"])[:N_PLAYERS]
     rtd = _f32(obs["right_team_direction"])[:N_PLAYERS]
-    a = int(obs["active"])
+    # active = -1 when this slot controls nobody (red card): use player 0, as cup/features.py does
+    a = max(int(obs["active"]), 0)
     me = lt[a]
     ball = _f32(obs["ball"])
     ball_dir = _f32(obs["ball_direction"])

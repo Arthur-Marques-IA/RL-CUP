@@ -36,7 +36,9 @@ def encode(raw: dict) -> torch.Tensor:
     ltd = raw["left_team_direction"].float()[:, :, :N_PLAYERS]
     rt = raw["right_team"].float()[:, :, :N_PLAYERS]
     rtd = raw["right_team_direction"].float()[:, :, :N_PLAYERS]
-    a = raw["active"].long()
+    # active = -1 when the agent controls nobody (e.g. a red card left 3 outfield players for 4
+    # agents): use player 0 so nothing crashes; that agent's action is ignored by the engine.
+    a = raw["active"].long().clamp_min(0)
     me = _gather_player(lt, a)
     my_dir = _gather_player(ltd, a)
     ball = raw["ball"].float()
