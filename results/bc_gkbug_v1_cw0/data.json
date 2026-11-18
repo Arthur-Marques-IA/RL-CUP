@@ -1,0 +1,90 @@
+{
+  "teacher": "grf:GKBug_v1",
+  "samples": 1176392,
+  "label_histogram": [
+    128016,
+    58212,
+    74939,
+    47762,
+    20411,
+    98727,
+    75477,
+    28213,
+    34712,
+    4809,
+    8091,
+    7619,
+    19340,
+    32977,
+    475793,
+    31561,
+    2,
+    5133,
+    24598
+  ],
+  "shards": [
+    {
+      "matches": 14,
+      "goals_for": 34,
+      "goals_against": 3,
+      "teacher": "grf:GKBug_v1",
+      "seed": 1,
+      "samples": 168056,
+      "seconds": 413.7
+    },
+    {
+      "matches": 14,
+      "goals_for": 42,
+      "goals_against": 0,
+      "teacher": "grf:GKBug_v1",
+      "seed": 2,
+      "samples": 168056,
+      "seconds": 400.6
+    },
+    {
+      "matches": 14,
+      "goals_for": 53,
+      "goals_against": 1,
+      "teacher": "grf:GKBug_v1",
+      "seed": 3,
+      "samples": 168056,
+      "seconds": 407.8
+    },
+    {
+      "matches": 14,
+      "goals_for": 35,
+      "goals_against": 3,
+      "teacher": "grf:GKBug_v1",
+      "seed": 4,
+      "samples": 168056,
+      "seconds": 408.1
+    },
+    {
+      "matches": 14,
+      "goals_for": 36,
+      "goals_against": 0,
+      "teacher": "grf:GKBug_v1",
+      "seed": 5,
+      "samples": 168056,
+      "seconds": 403.0
+    },
+    {
+      "matches": 14,
+      "goals_for": 23,
+      "goals_against": 0,
+      "teacher": "grf:GKBug_v1",
+      "seed": 6,
+      "samples": 168056,
+      "seconds": 395.4
+    },
+    {
+      "matches": 14,
+      "goals_for": 33,
+      "goals_against": 1,
+      "teacher": "grf:GKBug_v1",
+      "seed": 7,
+      "samples": 168056,
+      "seconds": 401.1
+    }
+  ]
+}

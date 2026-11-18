@@ -1,0 +1,32 @@
+{
+  "GKBug_v0": {
+    "matches": 32,
+    "W": 20,
+    "D": 12,
+    "L": 0,
+    "goals_for": 102,
+    "goals_against": 6,
+    "goal_diff_per_match": 3.0,
+    "points_per_match": 2.25
+  },
+  "GKBug_v1": {
+    "matches": 32,
+    "W": 24,
+    "D": 7,
+    "L": 1,
+    "goals_for": 112,
+    "goals_against": 5,
+    "goal_diff_per_match": 3.34375,
+    "points_per_match": 2.46875
+  },
+  "GKBug_v2": {
+    "matches": 32,
+    "W": 23,
+    "D": 8,
+    "L": 1,
+    "goals_for": 111,
+    "goals_against": 12,
+    "goal_diff_per_match": 3.09375,
+    "points_per_match": 2.40625
+  }
+}

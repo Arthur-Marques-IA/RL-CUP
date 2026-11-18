@@ -1,0 +1,12 @@
+{
+  "defense_v3": {
+    "matches": 32,
+    "W": 29,
+    "D": 2,
+    "L": 1,
+    "goals_for": 80,
+    "goals_against": 9,
+    "goal_diff_per_match": 2.21875,
+    "points_per_match": 2.78125
+  }
+}

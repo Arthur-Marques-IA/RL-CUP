@@ -1,0 +1,13 @@
+{
+  "cmd": "train",
+  "data": "data\\gkbug_v1",
+  "epochs": "20",
+  "batch_size": "4096",
+  "lr": "0.001",
+  "class_weight_power": "0.0",
+  "seed": "1",
+  "out": "runs\\bc_gkbug_v1_cw0",
+  "publish": "None",
+  "submission": "None",
+  "team": "ufg-rl-cup"
+}

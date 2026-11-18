@@ -1,0 +1,13 @@
+{
+  "matches": 32,
+  "W": 22,
+  "D": 7,
+  "L": 3,
+  "goals_for": 70,
+  "goals_against": 37,
+  "goal_diff_per_match": 1.03125,
+  "points_per_match": 2.28125,
+  "left": "teacher:template",
+  "right": "builtin",
+  "seed": 1000
+}

@@ -1,0 +1,32 @@
+{
+  "GKBug_v3": {
+    "matches": 32,
+    "W": 23,
+    "D": 8,
+    "L": 1,
+    "goals_for": 111,
+    "goals_against": 12,
+    "goal_diff_per_match": 3.09375,
+    "points_per_match": 2.40625
+  },
+  "PassingMain_v1": {
+    "matches": 32,
+    "W": 9,
+    "D": 12,
+    "L": 11,
+    "goals_for": 33,
+    "goals_against": 37,
+    "goal_diff_per_match": -0.125,
+    "points_per_match": 1.21875
+  },
+  "PassingMain_v2": {
+    "matches": 32,
+    "W": 24,
+    "D": 8,
+    "L": 0,
+    "goals_for": 52,
+    "goals_against": 11,
+    "goal_diff_per_match": 1.28125,
+    "points_per_match": 2.5
+  }
+}

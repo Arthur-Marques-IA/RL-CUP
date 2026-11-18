@@ -1,0 +1,12 @@
+{
+  "3-1_LongPass": {
+    "matches": 32,
+    "W": 30,
+    "D": 2,
+    "L": 0,
+    "goals_for": 68,
+    "goals_against": 6,
+    "goal_diff_per_match": 1.9375,
+    "points_per_match": 2.875
+  }
+}

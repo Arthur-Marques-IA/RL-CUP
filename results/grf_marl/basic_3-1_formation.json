@@ -1,0 +1,12 @@
+{
+  "3-1_formation": {
+    "matches": 32,
+    "W": 0,
+    "D": 11,
+    "L": 21,
+    "goals_for": 3,
+    "goals_against": 36,
+    "goal_diff_per_match": -1.03125,
+    "points_per_match": 0.34375
+  }
+}
