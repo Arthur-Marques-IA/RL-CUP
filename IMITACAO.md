@@ -57,6 +57,28 @@ Destilar a política treinada de outro grupo para uma submissão avaliada **prec
 - O clone com ruído concorda 96% com o professor jogando, mas quase nunca **chuta** (o professor chuta em ~1% dos passos). Uma ação rara e decisiva some no BC. → Para professores melhores: pesos de classe ou sobreamostragem de chutes/passes, e ruído só leve e só em direções.
 - Submissão `submissions/bc_template`: **`arena.check` oficial = PASS** (Docker, GRF real). Probe gravado no cuju reproduzido 2400/2400 (100%), 6–0 contra random, 2–1 contra builtin, `act()` 0.89 ms em média (limite 20 ms), carga em 0.30 s.
 
+## Professores GRF_MARL medidos (cuju, 32 partidas contra o builtin a 0.05)
+| Checkpoint | V/E/D | Saldo/partida | Pontos/partida |
+|---|---|---|---|
+| GKBug_v1 | 24/7/1 | +3.34 | 2.47 |
+| GKBug_v2 (= v3, pesos idênticos) | 23/8/1 | +3.09 | 2.41 |
+| GKBug_v0 | 20/12/0 | +3.00 | 2.25 |
+| defense_v3 | 29/2/1 | +2.22 | 2.78 |
+| 3-1_LongPass | 30/2/0 | +1.94 | 2.88 |
+| PassingMain_v2 | 24/8/0 | +1.28 | 2.50 |
+| PassingMain_v1 | 9/12/11 | −0.12 | 1.22 |
+| 3-1_formation | 0/11/21 | −1.03 | 0.34 |
+
+Nenhum usa RNN (`use_rnn: False`); o histórico de ações não entra (`use_action_gramma: False`). A rede reconstruída dá saída idêntica à original (diferença 0.0).
+
+### BC do GKBug_v1 (1.18M amostras, 98 partidas, professor 256–8 em gols)
+| Aluno | Acurácia val. | Recall do chute | V/E/D | Saldo |
+|---|---|---|---|---|
+| MLP 256, 20 épocas | 81.3% | 63% | 1/27/4 | −0.03 |
+| MLP 512, 40 épocas | ~82% (parou por falta de RAM na época 12) | 65% | — | — |
+
+40% dos rótulos são "release direction" (14). O aluno **não reproduz** o professor: rede maior quase não ajuda, o que sugere falta de informação nas features (máscara de ações e impedimento do professor) e erro composto. Próximos passos: (1) aplicar a máscara de ações do professor ao aluno e medir; (2) se ajudar, portar as regras da máscara como features; (3) 2–3 rodadas de DAgger. **Gate**: só vira init quando superar o clone do template.
+
 ## Comandos
 ```bash
 # testes de paridade (features torch × numpy, professor torch × template numpy)

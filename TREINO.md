@@ -45,8 +45,9 @@ Binários não fazem merge. **Duas pessoas não podem treinar a mesma linha ao m
 
 | Linha (`line`) | Config | Dono atual | Máquina | Status |
 |---|---|---|---|---|
-| `B_bc_gkbug` | `configs/ppo_bc_gkbug.yaml` | | | a iniciar |
-| `A_scratch` | `configs/ppo_scratch.yaml` | | | a iniciar |
+| `B0_bc_template` | `configs/ppo_bc_template.yaml` | | | pronta (init: clone do template, `checkpoints/bc_template`) |
+| `A_scratch` | `configs/ppo_scratch.yaml` | | | pronta |
+| `B_bc_gkbug` | `configs/ppo_bc_gkbug.yaml` | | | **pendente**: o clone do GKBug_v1 ainda não passou no gate (ver IMITACAO.md) |
 
 Para experimentar uma variação a partir de uma linha existente, **ramifique com outro nome**:
 `python -m cup.train --resume B_bc_gkbug --line B2_sem_shaping --set reward.shaping_final=0`
@@ -56,7 +57,7 @@ Para experimentar uma variação a partir de uma linha existente, **ramifique co
 ```bash
 git pull
 python -m cup.train --config configs/smoke.yaml                 # 2 min, confere que tudo funciona
-python -m cup.train --config configs/ppo_bc_gkbug.yaml          # linha nova
+python -m cup.train --config configs/ppo_bc_template.yaml       # linha nova
 python -m cup.train --resume B_bc_gkbug                         # continuar (pega o mais novo: local ou publicado)
 python -m cup.train --resume B_bc_gkbug --set env.num_envs=4096 # pode mudar device/num_envs ao retomar
 ```
@@ -77,7 +78,7 @@ python -m cup.train --resume B_bc_gkbug --set env.num_envs=4096 # pode mudar dev
 | `latest_match.cjr` | última partida de avaliação, para assistir em 3D |
 | `meta.json` | quem, máquina, commit do código, passos, linha-pai, última avaliação |
 
-Cada publicação adiciona ~3–5 MB ao histórico do git (sem LFS, por escolha do grupo). Publicar de hora em hora é suficiente.
+Cada publicação adiciona ~2 MB (latest.pt) + 0.4 MB por snapshot novo + 1.8 MB (partida) ao histórico do git (sem LFS, por escolha do grupo). Publicar de hora em hora é suficiente.
 
 ## 4. Acompanhar visualmente
 
@@ -103,11 +104,12 @@ docker compose run --rm -v "<caminho>/RL-CUP/submissions:/subs:ro" gfootball pyt
 ```
 O `cup.export` lê tanto `latest.pt` (checkpoint de PPO) quanto `model.pt` (BC).
 
-## 6. Recriar o clone BC do GKBug_v1 (só se precisar; já está publicado)
+## 6. Clone BC do GKBug_v1 (em andamento; ainda não publicado)
 ```bash
 git clone https://github.com/jidiai/GRF_MARL /tmp/GRF_MARL
 python -m cup.grf_marl extract /tmp/GRF_MARL         # pesos -> third_party/grf_marl/weights (já versionados)
 for s in 1 2 3 4 5 6 7; do python -m cup.bc collect --teacher grf:GKBug_v1 --envs 14 --seed $s --out data/gkbug_v1/shard$s.pt & done; wait
-python -m cup.bc train --data data/gkbug_v1 --epochs 40 --hidden 512 --out runs/bc_gkbug_v1 --publish bc_gkbug_v1
+python -m cup.bc train --data data/gkbug_v1 --epochs 30 --out runs/bc_gkbug_v1          # avaliar antes de publicar
+# só publique (--publish bc_gkbug_v1) se superar o clone do template contra o builtin
 ```
 A coleta é CPU-bound (o encoder do GRF_MARL é Python puro, ~200 passos/s por processo). Não vale rodar na máquina da GPU.
