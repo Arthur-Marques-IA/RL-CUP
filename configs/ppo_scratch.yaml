@@ -1,0 +1,30 @@
+# Line A: PPO from scratch (no imitation). Baseline for "IL-init vs scratch" in the report.
+line: A_scratch
+seed: 1
+total_steps: 300_000_000
+env:
+  num_envs: 2048            # GPU default; on CPU use --set env.device=cpu env.num_envs=64
+  device: cuda
+  builtin_fraction: 0.5     # half the matches vs the built-in AI (anchor), half vs the league
+ppo:
+  rollout: 128
+  gamma: 0.995
+  lr: 3.0e-4
+  lr_final: 1.0e-4
+  epochs: 4
+  minibatches: 8
+  entropy_coef: 0.003
+reward:
+  alpha: 0.2                # ball-progress potential
+  beta: 0.05                # possession potential (last touch)
+  shaping_end: 100_000_000  # shaping weight 1 -> 0 over the first 100M steps
+league:
+  refresh_latest: 2_000_000
+  snapshot_every: 10_000_000
+  pool_size: 10
+  p_latest: 0.6
+log:
+  eval_every: 5_000_000
+  eval_matches: 16
+  checkpoint_every: 2_000_000
+  publish_every_minutes: 60

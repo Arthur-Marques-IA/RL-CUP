@@ -1,0 +1,10 @@
+# Training stack. torch comes with cuju; for a CUDA build of torch install it first from pytorch.org.
+# RTX 50 (compute capability 12.0): the cuju wheel has no kernels for it -> build cuju from source
+# (see TREINO.md). CPU training works with the wheel on every machine.
+cuju[render]==0.2.1
+pyyaml>=6
+tensorboard>=2.15
+pytest>=8
+# only for running the GRF_MARL teachers/opponents (cup/grf_marl.py, vendored encoders)
+gym==0.26.2
+scipy>=1.11

@@ -1,0 +1,8 @@
+# Short CPU run (~1 h on 8 cores) to check that learning moves in the right direction.
+line: cpu_quick
+seed: 1
+total_steps: 3_000_000
+env: {num_envs: 64, device: cpu, builtin_fraction: 1.0}
+ppo: {rollout: 128, epochs: 4, minibatches: 4, lr: 3.0e-4}
+reward: {shaping_end: 3_000_000, shaping_final: 0.3}
+log: {eval_every: 1_000_000, eval_matches: 16, checkpoint_every: 500_000}

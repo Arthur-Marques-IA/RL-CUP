@@ -1,0 +1,9 @@
+# 2-minute CPU smoke test of the whole pipeline (league, eval, replay, checkpoint). Not a real run.
+line: smoke
+seed: 1
+total_steps: 60_000
+env: {num_envs: 16, device: cpu, builtin_fraction: 0.5, stagger: true}
+ppo: {rollout: 64, epochs: 2, minibatches: 2}
+reward: {shaping_end: 60_000}
+league: {refresh_latest: 10_000, snapshot_every: 20_000, pool_size: 2}
+log: {eval_every: 30_000, eval_matches: 2, checkpoint_every: 20_000}
