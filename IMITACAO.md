@@ -84,6 +84,19 @@ Nenhum usa RNN (`use_rnn: False`); o histórico de ações não entra (`use_acti
 
 40% dos rótulos são "release direction" (14). O aluno **não reproduz** o professor: rede maior quase não ajuda, o que sugere falta de informação nas features (máscara de ações e impedimento do professor) e erro composto. Próximos passos: (1) aplicar a máscara de ações do professor ao aluno e medir; (2) se ajudar, portar as regras da máscara como features; (3) 2–3 rodadas de DAgger. **Gate**: só vira init quando superar o clone do template.
 
+### DAgger (3 rodadas; cada uma ~98 partidas rotuladas pelo professor; base agregada)
+| Rodada | β | Amostras acumuladas | Acurácia val. | Contra o builtin, seed 1000 (32 partidas) | Seed 3000 (64 partidas) |
+|---|---|---|---|---|---|
+| 0 (BC) | — | 1.18M | 81.3% | 1/27/4, −0.03 | — |
+| 1 | 0.5 | 2.35M | 80.6% | 2/30/0, +0.22 | — |
+| 2 | 0.25 | 3.53M | 80.6% | 10/20/2, **+0.53** | 15/46/3, +0.55 (1.42 pts) |
+| 3 | 0.0 | 4.70M | 81.6% | 6/25/1, +0.44 | 10/53/1, +0.22 (1.30 pts) |
+| *clone do template* | — | 0.38M | 97.9% | 16/7/9, +0.44 | **35/21/8, +0.88 (1.97 pts)** |
+
+**Frente a frente (64 partidas, seed 2000):** clone GKBug (DAgger 2) × clone do template = **19/12/33**, saldo −0.48.
+
+**Gate: não passou.** O DAgger levou o clone de −0.03 a +0.5 e estabilizou ali, longe do professor (+3.34). O clone empata muito (estilo conservador) e perde para o clone do template no confronto direto e contra o builtin. Decisão: **o init da linha B continua sendo o clone do template** (`checkpoints/bc_template`). A alternativa que sobra é portar o encoder completo do GRF_MARL (192 features com impedimento) para torch, para destilar sem perda de informação. Custo alto, ganho incerto.
+
 ## Comandos
 ```bash
 # testes de paridade (features torch × numpy, professor torch × template numpy)

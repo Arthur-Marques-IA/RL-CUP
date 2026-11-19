@@ -1,0 +1,321 @@
+{
+  "teacher": "grf:GKBug_v1",
+  "samples": 4705568,
+  "label_histogram": [
+    493930,
+    208339,
+    368719,
+    204974,
+    134224,
+    354481,
+    352570,
+    120603,
+    125102,
+    14811,
+    25207,
+    26671,
+    86629,
+    115671,
+    1818758,
+    129400,
+    10,
+    18984,
+    106485
+  ],
+  "shards": [
+    {
+      "matches": 14,
+      "goals_for": 34,
+      "goals_against": 3,
+      "teacher": "grf:GKBug_v1",
+      "seed": 1,
+      "samples": 168056,
+      "seconds": 413.7
+    },
+    {
+      "matches": 14,
+      "goals_for": 42,
+      "goals_against": 0,
+      "teacher": "grf:GKBug_v1",
+      "seed": 2,
+      "samples": 168056,
+      "seconds": 400.6
+    },
+    {
+      "matches": 14,
+      "goals_for": 53,
+      "goals_against": 1,
+      "teacher": "grf:GKBug_v1",
+      "seed": 3,
+      "samples": 168056,
+      "seconds": 407.8
+    },
+    {
+      "matches": 14,
+      "goals_for": 35,
+      "goals_against": 3,
+      "teacher": "grf:GKBug_v1",
+      "seed": 4,
+      "samples": 168056,
+      "seconds": 408.1
+    },
+    {
+      "matches": 14,
+      "goals_for": 36,
+      "goals_against": 0,
+      "teacher": "grf:GKBug_v1",
+      "seed": 5,
+      "samples": 168056,
+      "seconds": 403.0
+    },
+    {
+      "matches": 14,
+      "goals_for": 23,
+      "goals_against": 0,
+      "teacher": "grf:GKBug_v1",
+      "seed": 6,
+      "samples": 168056,
+      "seconds": 395.4
+    },
+    {
+      "matches": 14,
+      "goals_for": 33,
+      "goals_against": 1,
+      "teacher": "grf:GKBug_v1",
+      "seed": 7,
+      "samples": 168056,
+      "seconds": 401.1
+    },
+    {
+      "matches": 14,
+      "goals_for": 49,
+      "goals_against": 1,
+      "teacher": "grf:GKBug_v1",
+      "seed": 101,
+      "samples": 168056,
+      "seconds": 394.7,
+      "student": "runs/bc_gkbug_v1_cw0/model.pt",
+      "beta": 0.5
+    },
+    {
+      "matches": 14,
+      "goals_for": 52,
+      "goals_against": 4,
+      "teacher": "grf:GKBug_v1",
+      "seed": 102,
+      "samples": 168056,
+      "seconds": 393.8,
+      "student": "runs/bc_gkbug_v1_cw0/model.pt",
+      "beta": 0.5
+    },
+    {
+      "matches": 14,
+      "goals_for": 18,
+      "goals_against": 1,
+      "teacher": "grf:GKBug_v1",
+      "seed": 103,
+      "samples": 168056,
+      "seconds": 386.6,
+      "student": "runs/bc_gkbug_v1_cw0/model.pt",
+      "beta": 0.5
+    },
+    {
+      "matches": 14,
+      "goals_for": 19,
+      "goals_against": 2,
+      "teacher": "grf:GKBug_v1",
+      "seed": 104,
+      "samples": 168056,
+      "seconds": 383.3,
+      "student": "runs/bc_gkbug_v1_cw0/model.pt",
+      "beta": 0.5
+    },
+    {
+      "matches": 14,
+      "goals_for": 30,
+      "goals_against": 0,
+      "teacher": "grf:GKBug_v1",
+      "seed": 105,
+      "samples": 168056,
+      "seconds": 395.5,
+      "student": "runs/bc_gkbug_v1_cw0/model.pt",
+      "beta": 0.5
+    },
+    {
+      "matches": 14,
+      "goals_for": 30,
+      "goals_against": 2,
+      "teacher": "grf:GKBug_v1",
+      "seed": 106,
+      "samples": 168056,
+      "seconds": 390.6,
+      "student": "runs/bc_gkbug_v1_cw0/model.pt",
+      "beta": 0.5
+    },
+    {
+      "matches": 14,
+      "goals_for": 30,
+      "goals_against": 7,
+      "teacher": "grf:GKBug_v1",
+      "seed": 107,
+      "samples": 168056,
+      "seconds": 396.4,
+      "student": "runs/bc_gkbug_v1_cw0/model.pt",
+      "beta": 0.5
+    },
+    {
+      "matches": 14,
+      "goals_for": 23,
+      "goals_against": 8,
+      "teacher": "grf:GKBug_v1",
+      "seed": 201,
+      "samples": 168056,
+      "seconds": 483.3,
+      "student": "runs/bc_gkbug_v1_dagger1/model.pt",
+      "beta": 0.25
+    },
+    {
+      "matches": 14,
+      "goals_for": 42,
+      "goals_against": 3,
+      "teacher": "grf:GKBug_v1",
+      "seed": 202,
+      "samples": 168056,
+      "seconds": 464.2,
+      "student": "runs/bc_gkbug_v1_dagger1/model.pt",
+      "beta": 0.25
+    },
+    {
+      "matches": 14,
+      "goals_for": 13,
+      "goals_against": 2,
+      "teacher": "grf:GKBug_v1",
+      "seed": 203,
+      "samples": 168056,
+      "seconds": 465.3,
+      "student": "runs/bc_gkbug_v1_dagger1/model.pt",
+      "beta": 0.25
+    },
+    {
+      "matches": 14,
+      "goals_for": 36,
+      "goals_against": 5,
+      "teacher": "grf:GKBug_v1",
+      "seed": 204,
+      "samples": 168056,
+      "seconds": 483.3,
+      "student": "runs/bc_gkbug_v1_dagger1/model.pt",
+      "beta": 0.25
+    },
+    {
+      "matches": 14,
+      "goals_for": 23,
+      "goals_against": 2,
+      "teacher": "grf:GKBug_v1",
+      "seed": 205,
+      "samples": 168056,
+      "seconds": 468.0,
+      "student": "runs/bc_gkbug_v1_dagger1/model.pt",
+      "beta": 0.25
+    },
+    {
+      "matches": 14,
+      "goals_for": 23,
+      "goals_against": 3,
+      "teacher": "grf:GKBug_v1",
+      "seed": 206,
+      "samples": 168056,
+      "seconds": 472.0,
+      "student": "runs/bc_gkbug_v1_dagger1/model.pt",
+      "beta": 0.25
+    },
+    {
+      "matches": 14,
+      "goals_for": 30,
+      "goals_against": 3,
+      "teacher": "grf:GKBug_v1",
+      "seed": 207,
+      "samples": 168056,
+      "seconds": 491.7,
+      "student": "runs/bc_gkbug_v1_dagger1/model.pt",
+      "beta": 0.25
+    },
+    {
+      "matches": 14,
+      "goals_for": 5,
+      "goals_against": 1,
+      "teacher": "grf:GKBug_v1",
+      "seed": 301,
+      "samples": 168056,
+      "seconds": 424.7,
+      "student": "runs/bc_gkbug_v1_dagger2/model.pt",
+      "beta": 0.0
+    },
+    {
+      "matches": 14,
+      "goals_for": 5,
+      "goals_against": 1,
+      "teacher": "grf:GKBug_v1",
+      "seed": 302,
+      "samples": 168056,
+      "seconds": 426.1,
+      "student": "runs/bc_gkbug_v1_dagger2/model.pt",
+      "beta": 0.0
+    },
+    {
+      "matches": 14,
+      "goals_for": 6,
+      "goals_against": 1,
+      "teacher": "grf:GKBug_v1",
+      "seed": 303,
+      "samples": 168056,
+      "seconds": 431.0,
+      "student": "runs/bc_gkbug_v1_dagger2/model.pt",
+      "beta": 0.0
+    },
+    {
+      "matches": 14,
+      "goals_for": 6,
+      "goals_against": 0,
+      "teacher": "grf:GKBug_v1",
+      "seed": 304,
+      "samples": 168056,
+      "seconds": 421.4,
+      "student": "runs/bc_gkbug_v1_dagger2/model.pt",
+      "beta": 0.0
+    },
+    {
+      "matches": 14,
+      "goals_for": 11,
+      "goals_against": 3,
+      "teacher": "grf:GKBug_v1",
+      "seed": 305,
+      "samples": 168056,
+      "seconds": 428.4,
+      "student": "runs/bc_gkbug_v1_dagger2/model.pt",
+      "beta": 0.0
+    },
+    {
+      "matches": 14,
+      "goals_for": 9,
+      "goals_against": 2,
+      "teacher": "grf:GKBug_v1",
+      "seed": 306,
+      "samples": 168056,
+      "seconds": 429.3,
+      "student": "runs/bc_gkbug_v1_dagger2/model.pt",
+      "beta": 0.0
+    },
+    {
+      "matches": 14,
+      "goals_for": 4,
+      "goals_against": 1,
+      "teacher": "grf:GKBug_v1",
+      "seed": 307,
+      "samples": 168056,
+      "seconds": 418.4,
+      "student": "runs/bc_gkbug_v1_dagger2/model.pt",
+      "beta": 0.0
+    }
+  ]
+}

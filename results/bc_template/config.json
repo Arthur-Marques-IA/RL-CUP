@@ -1,0 +1,17 @@
+{
+  "cmd": "run",
+  "teacher": "template",
+  "steps": "3001",
+  "envs": "32",
+  "noise": "0.0",
+  "epochs": "15",
+  "hidden": "256",
+  "batch_size": "4096",
+  "lr": "0.001",
+  "class_weight_power": "0.0",
+  "seed": "1",
+  "out": "runs\\bc_template",
+  "publish": "bc_template",
+  "submission": "None",
+  "team": "ufg-rl-cup"
+}

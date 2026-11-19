@@ -1,0 +1,14 @@
+{
+  "cmd": "train",
+  "data": "[WindowsPath('data/gkbug_v1'), WindowsPath('data/gkbug_v1_dagger1'), WindowsPath('data/gkbug_v1_dagger2')]",
+  "epochs": "20",
+  "hidden": "256",
+  "batch_size": "4096",
+  "lr": "0.001",
+  "class_weight_power": "0.0",
+  "seed": "1",
+  "out": "runs\\bc_gkbug_v1_dagger2",
+  "publish": "None",
+  "submission": "None",
+  "team": "ufg-rl-cup"
+}

@@ -1,0 +1,13 @@
+{
+  "matches": 32,
+  "W": 16,
+  "D": 7,
+  "L": 9,
+  "goals_for": 57,
+  "goals_against": 43,
+  "goal_diff_per_match": 0.4375,
+  "points_per_match": 1.71875,
+  "left": "runs/bc_template/model.pt",
+  "right": "builtin",
+  "seed": 1000
+}

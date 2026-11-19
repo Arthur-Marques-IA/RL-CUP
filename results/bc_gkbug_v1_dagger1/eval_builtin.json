@@ -1,0 +1,13 @@
+{
+  "matches": 32,
+  "W": 2,
+  "D": 30,
+  "L": 0,
+  "goals_for": 8,
+  "goals_against": 1,
+  "goal_diff_per_match": 0.21875,
+  "points_per_match": 1.125,
+  "left": "runs/bc_gkbug_v1_dagger1/model.pt",
+  "right": "builtin",
+  "seed": 1000
+}
