@@ -30,8 +30,12 @@ from cup.teachers import make_teacher
 SCENARIO = "5_vs_5_l4_r0"
 
 
-def collect(teacher, steps: int, envs: int, noise: float, seed: int, device: str = "cpu"):
-    """Returns features [N, 87] (float16 to save space), labels [N] (uint8) and stats."""
+def collect(teacher, steps: int, envs: int, noise: float, seed: int, device: str = "cpu",
+            student=None, beta: float = 1.0):
+    """Returns features [N, 87] (float16 to save space), labels [N] (uint8) and stats.
+
+    DAgger: with a `student`, each agent executes the teacher's action with probability `beta`
+    and the student's (argmax) otherwise; the label is always the teacher's."""
     gen = torch.Generator().manual_seed(seed)
     feats, labels = [], []
     goals_for = goals_against = 0
@@ -45,9 +49,16 @@ def collect(teacher, steps: int, envs: int, noise: float, seed: int, device: str
             feats.append(x.reshape(-1, x.shape[-1]).cpu().half())
             labels.append(a.reshape(-1).cpu().to(torch.uint8))
             act = a.clone()
+            if student is not None and beta < 1.0:
+                with torch.no_grad():
+                    s = student.logits(x).argmax(-1)
+                use_student = torch.rand(a.shape, generator=gen) >= beta
+                act = torch.where(use_student, s, act)
             if noise > 0:
                 flip = torch.rand(a.shape, generator=gen) < noise
                 act[flip] = torch.randint(1, 9, (int(flip.sum()),), generator=gen)
+            if hasattr(teacher, "set_executed"):
+                teacher.set_executed(act)
             raw, reward, done, info = batch.step(act.to(torch.int32))
             sr = info["score_reward"]
             goals_for += int((sr == 1).sum())
@@ -138,6 +149,8 @@ def main():
         sp.add_argument("--steps", type=int, default=3001)
         sp.add_argument("--envs", type=int, default=32)
         sp.add_argument("--noise", type=float, default=0.0)
+        sp.add_argument("--student", default=None, help="DAgger: student model.pt that plays")
+        sp.add_argument("--beta", type=float, default=0.0, help="DAgger: P(teacher plays) per agent-step")
 
     r = sub.add_parser("run", help="collect + train in one process")
     common_collect(r)
@@ -147,14 +160,23 @@ def main():
     c.add_argument("--seed", type=int, default=1)
     c.add_argument("--out", type=Path, required=True)
     t = sub.add_parser("train", help="train on all shards in --data")
-    t.add_argument("--data", type=Path, required=True)
+    t.add_argument("--data", type=Path, nargs="+", required=True, help="one or more shard folders (DAgger: aggregate rounds)")
     common_train(t)
     args = p.parse_args()
 
     if args.cmd == "collect":
         t0 = time.time()
-        x, y, stats = collect(make_teacher(args.teacher), args.steps, args.envs, args.noise, args.seed)
-        stats.update(teacher=args.teacher, seed=args.seed, samples=len(y), seconds=round(time.time() - t0, 1))
+        student = None
+        if args.student:
+            st = torch.load(args.student, map_location="cpu", weights_only=False)
+            sd = st.get("model", st)
+            student = ActorCritic(hidden=sd["actor.0.weight"].shape[0])
+            student.load_state_dict(sd)
+            student.eval()
+        x, y, stats = collect(make_teacher(args.teacher), args.steps, args.envs, args.noise, args.seed,
+                              student=student, beta=args.beta if student is not None else 1.0)
+        stats.update(teacher=args.teacher, seed=args.seed, samples=len(y), seconds=round(time.time() - t0, 1),
+                     student=args.student, beta=args.beta if student is not None else 1.0)
         args.out.parent.mkdir(parents=True, exist_ok=True)
         torch.save({"x": x, "y": y, "stats": stats}, args.out)
         print(json.dumps(stats))
@@ -168,7 +190,7 @@ def main():
         stats = [stats]
         teacher = args.teacher
     else:
-        shards = [torch.load(f, weights_only=False) for f in sorted(args.data.glob("*.pt"))]
+        shards = [torch.load(f, weights_only=False) for d in args.data for f in sorted(d.glob("*.pt"))]
         x = torch.cat([s["x"] for s in shards])
         y = torch.cat([s["y"] for s in shards])
         stats = [s["stats"] for s in shards]

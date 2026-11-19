@@ -77,6 +77,11 @@ Nenhum usa RNN (`use_rnn: False`); o histórico de ações não entra (`use_acti
 | MLP 256, 20 épocas | 81.3% | 63% | 1/27/4 | −0.03 |
 | MLP 512, 40 épocas | ~82% (parou por falta de RAM na época 12) | 65% | — | — |
 
+**Diagnóstico** (`cup/bc_diag.py`, resultados em `results/bc_gkbug_v1_cw0/`):
+- **A máscara de ações do professor não ajuda**: o aluno mascarado faz exatamente 1/27/4, e o aluno sem máscara escolhe ação ilegal em 0% dos passos.
+- **Erro composto**: o aluno concorda 81% com o professor nos estados do professor, mas só **49% nos estados que ele mesmo visita**. Nesses estados, ele escolhe "release direction" (parar) em 56% dos passos, contra 24% do professor, que ali quer se mover (cima 17%, baixo-direita 13%).
+- → **DAgger** (`scripts/dagger.sh`): o aluno joga, o professor rotula, e o aluno é retreinado na base agregada, com β = 0.5 → 0.25 → 0.
+
 40% dos rótulos são "release direction" (14). O aluno **não reproduz** o professor: rede maior quase não ajuda, o que sugere falta de informação nas features (máscara de ações e impedimento do professor) e erro composto. Próximos passos: (1) aplicar a máscara de ações do professor ao aluno e medir; (2) se ajudar, portar as regras da máscara como features; (3) 2–3 rodadas de DAgger. **Gate**: só vira init quando superar o clone do template.
 
 ## Comandos

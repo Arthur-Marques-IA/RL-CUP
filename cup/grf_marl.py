@@ -143,7 +143,23 @@ class GRFMarlTeacher:
             if mask is None or bool(mask[e]):
                 self.states[e] = None
 
+    def set_executed(self, actions) -> None:
+        """Tell the teacher which actions were actually played this step (DAgger / masked student),
+        so its State history matches the game."""
+        self.last = np.asarray(actions.cpu() if hasattr(actions, "cpu") else actions)
+
     def __call__(self, raw) -> torch.Tensor:
+        feats = self.encode(raw)
+        actions = self.net.act(feats)
+        self.last = actions
+        return torch.as_tensor(actions, dtype=torch.long)
+
+    def legal_mask(self, feats: np.ndarray) -> torch.Tensor:
+        """Their legal-action mask (first 19 features) -> bool tensor [E, A, 19]."""
+        return torch.as_tensor(feats[..., :N_ACTIONS] > 0.5)
+
+    def encode(self, raw) -> np.ndarray:
+        """Their features [E, A, D] for the current step (updates the per-player State)."""
         from cup.features import raw_to_dicts
         E, A = raw["active"].shape
         if self.states is None:
@@ -166,9 +182,24 @@ class GRFMarlTeacher:
                         del s.obs_list[:-4]
                         del s.action_list[:-4]
             feats.append(np.asarray(self.encoder.encode(self.states[e]), dtype=np.float32))
-        actions = self.net.act(np.stack(feats))
-        self.last = actions
-        return torch.as_tensor(actions, dtype=torch.long)
+        return np.stack(feats)
+
+
+class MaskedStudent:
+    """Our student (egocentric MLP) with the GRF_MARL teacher's legal-action mask applied to its
+    logits: a diagnostic of how much the missing mask explains the student-teacher gap."""
+
+    def __init__(self, model, teacher: GRFMarlTeacher):
+        self.model, self.teacher = model, teacher
+
+    @torch.no_grad()
+    def __call__(self, raw) -> torch.Tensor:
+        from cup import features
+        mask = self.teacher.legal_mask(self.teacher.encode(raw))
+        logits = self.model.logits(features.encode(raw))
+        a = logits.masked_fill(~mask, -1e9).argmax(-1)
+        self.teacher.set_executed(a)
+        return a
 
 
 # --------------------------------------------------------------------------- measurement
