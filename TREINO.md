@@ -47,10 +47,12 @@ Binários não fazem merge. **Duas pessoas não podem treinar a mesma linha ao m
 |---|---|---|---|---|
 | `B0_bc_template` | `configs/ppo_bc_template.yaml` | | | pronta (init: clone do template, `checkpoints/bc_template`) |
 | `A_scratch` | `configs/ppo_scratch.yaml` | | | pronta |
-| `B_bc_gkbug` | `configs/ppo_bc_gkbug.yaml` | | | **pendente**: o clone do GKBug_v1 ainda não passou no gate (ver IMITACAO.md) |
+| `B_bc_gkbug` | `configs/ppo_bc_gkbug.yaml` | — | — | **não rodar**: o clone do GKBug_v1 não passou no gate (ver IMITACAO.md) |
 
 Para experimentar uma variação a partir de uma linha existente, **ramifique com outro nome**:
 `python -m cup.train --resume B_bc_gkbug --line B2_sem_shaping --set reward.shaping_final=0`
+
+**Ordem sugerida:** 1º `B0_bc_template` (parte de um clone que já vence o builtin: +0.88 de saldo, 1.97 pts/partida). 2º `A_scratch`, que é o baseline "PPO do zero" do relatório. Com uma GPU só, rode a B0 primeiro.
 
 ## 3. Treinar
 
@@ -104,7 +106,7 @@ docker compose run --rm -v "<caminho>/RL-CUP/submissions:/subs:ro" gfootball pyt
 ```
 O `cup.export` lê tanto `latest.pt` (checkpoint de PPO) quanto `model.pt` (BC).
 
-## 6. Clone BC do GKBug_v1 (em andamento; ainda não publicado)
+## 6. Clone BC do GKBug_v1 (descartado no gate; só para reproduzir o experimento)
 ```bash
 git clone https://github.com/jidiai/GRF_MARL /tmp/GRF_MARL
 python -m cup.grf_marl extract /tmp/GRF_MARL         # pesos -> third_party/grf_marl/weights (já versionados)
