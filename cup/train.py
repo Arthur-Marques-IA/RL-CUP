@@ -275,7 +275,7 @@ class Trainer:
         self.opp_idx = self._sample_opponents(max(self.n_pool, 1))
         goals_l = torch.zeros(E, device=dev)
         goals_r = torch.zeros(E, device=dev)
-        do_stagger = cfg.env.stagger and self.updates == 0
+        do_stagger = cfg.env.stagger   # also on resume: a fresh batch would start all matches in sync
         stagger_at = (torch.randint(1, 3001, (E,), device=dev) if do_stagger
                       else torch.full((E,), -1, device=dev))
         # the first (cut) match of each env is not counted; every later match starts at kick-off
@@ -531,6 +531,13 @@ def main():
                 (dst / name).unlink(missing_ok=True)
                 if (path.parent / name).is_file():
                     shutil.copy2(path.parent / name, dst / name)
+        # drop log rows written after the checkpoint we resume from (they will be re-trained)
+        for name in ("metrics.jsonl", "evals.jsonl"):
+            f = dst / name
+            if f.is_file():
+                keep = [ln for ln in f.read_text(encoding="utf-8").splitlines()
+                        if ln.strip() and json.loads(ln).get("env_steps", 0) <= int(state["env_steps"])]
+                f.write_text("".join(ln + "\n" for ln in keep), encoding="utf-8")
         print(f"resuming {a.resume} from {path} ({int(state['env_steps']):,} env steps)")
         if parent:
             state["parent"] = parent

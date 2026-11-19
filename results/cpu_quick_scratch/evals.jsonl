@@ -1,0 +1,3 @@
+{"env_steps": 1007616, "time": 1795025271.4, "W": 0, "D": 7, "L": 9, "goals_for": 0, "goals_against": 17, "goal_diff_per_match": -1.0625, "points_per_match": 0.4375, "top_action_share": 0.32304856181144714, "shot_share": 0.005440894514322281}
+{"env_steps": 2007040, "time": 1795026926.5, "W": 0, "D": 5, "L": 11, "goals_for": 1, "goals_against": 26, "goal_diff_per_match": -1.5625, "points_per_match": 0.3125, "top_action_share": 0.22093155980110168, "shot_share": 0.0}
+{"env_steps": 3006464, "time": 1795027910.9, "W": 0, "D": 3, "L": 13, "goals_for": 0, "goals_against": 22, "goal_diff_per_match": -1.375, "points_per_match": 0.1875, "top_action_share": 0.3507736921310425, "shot_share": 0.012693685479462147}

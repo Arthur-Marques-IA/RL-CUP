@@ -1,0 +1,45 @@
+line: cpu_quick
+seed: 1
+total_steps: 3000000
+env:
+  num_envs: 64
+  device: cpu
+  threads: 0
+  builtin_fraction: 1.0
+  stagger: true
+ppo:
+  rollout: 128
+  gamma: 0.995
+  gae_lambda: 0.95
+  lr: 0.0003
+  lr_final: 0.0003
+  epochs: 4
+  minibatch_size: 8192
+  clip: 0.2
+  value_coef: 0.5
+  entropy_coef: 0.003
+  max_grad_norm: 0.5
+  hidden: 256
+reward:
+  alpha: 0.2
+  beta: 0.05
+  shaping_start: 0
+  shaping_end: 3000000
+  shaping_final: 0.3
+init:
+  checkpoint: null
+  kl_coef: 0.0
+  kl_end: 20000000
+  critic_warmup: 0
+league:
+  refresh_latest: 2000000
+  snapshot_every: 10000000
+  pool_size: 10
+  p_latest: 0.6
+  seed_pool: []
+log:
+  eval_every: 1000000
+  eval_matches: 16
+  save_replay: true
+  checkpoint_every: 500000
+  publish_every_minutes: 0
